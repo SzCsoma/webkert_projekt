@@ -1,0 +1,27 @@
+<nav class="navbar">
+    <div class="navbar-container">
+      <button class="mobile-menu-toggle" (click)="toggleMenu()" [class.active]="isMenuOpen">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+      </button>
+      
+      <ul class="navbar-menu" [class.active]="isMenuOpen">
+        <li class="navbar-item">
+          <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Főoldal</a>
+        </li>
+        <li class="navbar-item">
+          <a routerLink="/news" routerLinkActive="active">Hírek</a>
+        </li>
+        <li class="navbar-item">
+          <a routerLink="/matches" routerLinkActive="active">Mérkőzések</a>
+        </li>
+        <li class="navbar-item">
+          <a routerLink="/teams" routerLinkActive="active">Csapatok</a>
+        </li>
+        <li class="navbar-item">
+          <a routerLink="/players" routerLinkActive="active">Játékosok</a>
+        </li>
+      </ul>
+    </div>
+  </nav>

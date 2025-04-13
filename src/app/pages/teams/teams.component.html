@@ -1,0 +1,29 @@
+<div class="teams-container">
+    @for (team of teams; track team.name) {
+      <div class="team-card">
+        <h2>{{ team.name }} <span class="founded">({{ team.founded }})</span></h2>
+        
+        <div class="player-list">
+          @for (player of team.players; track player.name) {
+            <div class="player-card">
+              <img [src]="player.imageUrl" [alt]="player.name" />
+              <h4>{{ player.name }} 
+                @if (player.capNumber) {
+                  <span class="cap-number">#{{ player.capNumber }}</span>
+                }
+              </h4>
+              <p>{{ player.bio }}</p>
+            </div>
+          }
+          
+          @empty {
+            <p class="no-players">No players found for this team.</p>
+          }
+        </div>
+      </div>
+    }
+    
+    @empty {
+      <div class="no-teams">No teams available.</div>
+    }
+  </div>

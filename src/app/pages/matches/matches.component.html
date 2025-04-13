@@ -1,0 +1,24 @@
+<div class="matches-container">
+    @for (match of matches; track $index) {
+      <div class="match-card">
+        <div class="challenger">
+          <h3>{{ match.challenger.name }}</h3>
+          <img [src]="match.challenger.imageUrl" [alt]="match.challenger.name" />
+        </div>
+        
+        <div class="match-details">
+          <div class="match-date">{{ match.date }}</div>
+          <div class="match-location">{{ match.location }}</div>
+        </div>
+        
+        <div class="challenged">
+          <h3>{{ match.challenged.name }}</h3>
+          <img [src]="match.challenged.imageUrl" [alt]="match.challenged.name" />
+        </div>
+      </div>
+    }
+    
+    @empty {
+      <div class="no-matches">No upcoming matches scheduled.</div>
+    }
+  </div>

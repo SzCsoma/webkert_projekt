@@ -1,0 +1,51 @@
+<div class="news-container">
+  <h1>Hírek</h1>
+
+  <div class="news-grid">
+    <div class="news-card add-news-card">
+      <button mat-raised-button color="primary" (click)="toggleAddNewsForm()">
+        {{ showAddNewsForm ? 'Mégse' : 'Új hír hozzáadása' }}
+      </button>
+
+      <form *ngIf="showAddNewsForm" [formGroup]="addNewsForm" (ngSubmit)="submitNews()" class="news-form">
+        <mat-form-field appearance="fill">
+          <mat-label>Cím</mat-label>
+          <input matInput formControlName="title" />
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+          <mat-label>Összefoglaló</mat-label>
+          <input matInput formControlName="summary" />
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+          <mat-label>Tartalom</mat-label>
+          <textarea matInput formControlName="content"></textarea>
+        </mat-form-field>
+
+        <button mat-raised-button color="accent" type="submit" [disabled]="addNewsForm.invalid">
+          Hír mentése
+        </button>
+      </form>
+    </div>
+
+    <div class="news-container" [class.modal-open]="selectedNews">
+      @for (news of newsList; track $index) {
+        <div class="news-card" (click)="openNewsModal(news)">
+          <h3>{{ news.title }}</h3>
+          <p>{{ news.summary }}</p>
+        </div>
+      }
+    </div>
+
+
+  @if (selectedNews) {
+    <div class="news-modal" (click)="closeNewsModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <span class="close-btn" (click)="closeNewsModal()">&times;</span>
+        <h2>{{ selectedNews.title }}</h2>
+        <p>{{ selectedNews.content }}</p>
+      </div>
+    </div>
+  }
+</div>
