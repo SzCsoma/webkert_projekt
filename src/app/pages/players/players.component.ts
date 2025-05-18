@@ -1,69 +1,70 @@
-// players.component.ts
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { Player } from './player.model';
+import { PlayerService } from './player.service';
+import { Observable, Subscription } from 'rxjs';
+import { CommonModule } from '@angular/common';
+import { Auth, user } from '@angular/fire/auth';
+import { PlayerDetailComponent } from './player.detail';
 
 @Component({
   selector: 'app-players',
   standalone: true,
   templateUrl: './players.component.html',
   styleUrls: ['./players.component.scss'],
-  imports: [ReactiveFormsModule, MatFormFieldModule, MatInputModule, MatButtonModule]
+  imports: [
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    CommonModule,
+    PlayerDetailComponent
+  ]
 })
-export class PlayersComponent {
-  players: Player[] = [
-    {
-      name: 'Kovács Péter',
-      capNumber: 5,
-      bio: 'Kovács Péter, egy fiatal vízilabda játékos, aki a magyar válogatott színeiben szerepel.',
-      imageUrl: 'assets/placeholder.png',
-    },
-    {
-      name: 'Szabó Ádám',
-      capNumber: 10,
-      bio: 'Szabó Ádám, tapasztalt játékos, aki több nemzetközi tornán is részt vett.',
-      imageUrl: 'assets/placeholder.png',
-    },
-    {
-      name: 'Nagy László',
-      capNumber: 3,
-      bio: 'Nagy László, a vízilabda egyik legkiemelkedőbb alakja, hosszú évek óta a válogatott tagja.',
-      imageUrl: 'assets/placeholder.png',
-    },
-    {
-      name: 'Varga Dénes',
-      capNumber: 8,
-      bio: 'Varga Dénes, a magyar vízilabda egyik legismertebb neve, rendkívüli technikai tudással.',
-      imageUrl: 'assets/placeholder.png',
-    },
-    {
-      name: 'Hosnyánszky Norbert',
-      capNumber: 11,
-      bio: 'Hosnyánszky Norbert, olimpiai bajnok és a csapat egyik vezéregyénisége.',
-      imageUrl: 'assets/placeholder.png',
-    },
-    {
-      name: 'Manhercz Krisztián',
-      capNumber: 4,
-      bio: 'Manhercz Krisztián, fiatal, lendületes játékos, aki villámgyors úszásáról ismert.',
-      imageUrl: 'assets/placeholder.png',
-    }
-  ];
+export class PlayersComponent implements OnInit, OnDestroy {
+  players$: Observable<Player[]>;
+  sortedPlayers: Player[] = [];
+
   @Output() playerAdded = new EventEmitter<Player>();
+
   selectedPlayer: Player | null = null;
   showAddPlayerForm = false;
 
   addPlayerForm: FormGroup;
+  user$: Observable<any>;
 
-  constructor(private fb: FormBuilder) {
+  // Új változók az update kezeléshez
+  isEditing = false;
+  editingPlayerId: string | null = null;
+
+  private playersSubscription?: Subscription;
+
+  constructor(
+    private fb: FormBuilder,
+    private playerService: PlayerService,
+    private auth: Auth
+  ) {
     this.addPlayerForm = this.fb.group({
       name: ['', Validators.required],
-      capNumber: ['', Validators.required],
+      capNumber: ['', [Validators.required, Validators.min(0)]],
       bio: ['', Validators.required]
     });
+
+    this.players$ = this.playerService.getPlayers();
+    this.user$ = user(this.auth);
+  }
+
+  ngOnInit(): void {
+    this.playersSubscription = this.players$.subscribe(players => {
+      this.sortedPlayers = [...players];
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.playersSubscription?.unsubscribe();
   }
 
   openPlayerModal(player: Player) {
@@ -75,12 +76,32 @@ export class PlayersComponent {
   }
 
   openAddPlayerModal() {
+    this.selectedPlayer = null; // bezárjuk a player részletezőt
+    this.isEditing = false;
+    this.editingPlayerId = null;
+    this.addPlayerForm.reset();
+    this.showAddPlayerForm = true;
+  }
+
+  openEditPlayerModal(player: Player) {
+    this.selectedPlayer = null; // bezárjuk a player részletezőt
+    this.isEditing = true;
+    this.editingPlayerId = player.id || null;
+
+    this.addPlayerForm.patchValue({
+      name: player.name,
+      capNumber: player.capNumber,
+      bio: player.bio
+    });
+
     this.showAddPlayerForm = true;
   }
 
   closeAddPlayerModal() {
     this.showAddPlayerForm = false;
     this.addPlayerForm.reset();
+    this.isEditing = false;
+    this.editingPlayerId = null;
   }
 
   submitNewPlayer() {
@@ -89,9 +110,59 @@ export class PlayersComponent {
         ...this.addPlayerForm.value,
         imageUrl: 'assets/placeholder.png'
       };
-      this.players.unshift(newPlayer);
-      this.playerAdded.emit(newPlayer);  
-      this.closeAddPlayerModal();
+
+      this.playerService.addPlayer(newPlayer).then(() => {
+        this.playerAdded.emit(newPlayer);
+        this.closeAddPlayerModal();
+      }).catch(error => {
+        console.error('Hiba játékos hozzáadásakor:', error);
+      });
+    }
+  }
+
+  submitUpdatePlayer() {
+    if (this.addPlayerForm.valid && this.editingPlayerId) {
+      const updatedPlayer: Partial<Player> = {
+        ...this.addPlayerForm.value
+      };
+      this.playerService.updatePlayer(this.editingPlayerId, updatedPlayer)
+        .then(() => {
+          this.closeAddPlayerModal();
+        })
+        .catch(error => {
+          console.error('Hiba játékos frissítésekor:', error);
+        });
+    }
+  }
+
+  sortPlayers(key: keyof Player, order: 'asc' | 'desc') {
+    this.sortedPlayers = [...this.sortedPlayers].sort((a, b) => {
+      const valA = a[key] ?? '';
+      const valB = b[key] ?? '';
+      if (valA < valB) return order === 'asc' ? -1 : 1;
+      if (valA > valB) return order === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }
+
+  onPlayerDetailClose() {
+    this.closePlayerModal();
+  }
+
+  onPlayerEdit(player: Player) {
+    this.openEditPlayerModal(player);
+  }
+
+  onPlayerDelete(player: Player) {
+    if (confirm(`Biztosan törölni szeretnéd ${player.name} játékost?`)) {
+      this.playerService.deletePlayer(player.id)
+        .then(() => {
+          console.log(`${player.name} sikeresen törölve.`);
+          this.closePlayerModal();
+        })
+        .catch(error => {
+          console.error('Hiba a törlés során:', error);
+        });
     }
   }
 }

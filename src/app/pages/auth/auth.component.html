@@ -1,0 +1,52 @@
+<div style="display: flex; justify-content: space-around; margin-top: 2rem; flex-wrap: wrap;">
+  <mat-card style="width: 300px;">
+    <h2>Bejelentkezés</h2>
+    <form [formGroup]="loginForm" (ngSubmit)="login()">
+      <mat-form-field appearance="fill" style="width: 100%;">
+        <mat-label>Email</mat-label>
+        <input matInput type="email" formControlName="email" />
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" style="width: 100%;">
+        <mat-label>Jelszó</mat-label>
+        <input matInput type="password" formControlName="password" />
+      </mat-form-field>
+
+      <button mat-raised-button color="primary" type="submit" [disabled]="loginForm.invalid">
+        Bejelentkezés
+      </button>
+
+      <p *ngIf="loginError" style="color:red;">{{ loginError }}</p>
+    </form>
+  </mat-card>
+
+  <mat-card style="width: 300px;">
+    <h2>Regisztráció</h2>
+    <form [formGroup]="registerForm" (ngSubmit)="register()">
+      <mat-form-field appearance="fill" style="width: 100%;">
+        <mat-label>Email</mat-label>
+        <input matInput type="email" formControlName="email" />
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" style="width: 100%;">
+        <mat-label>Jelszó</mat-label>
+        <input matInput type="password" formControlName="password" />
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" style="width: 100%;">
+        <mat-label>Jelszó megerősítése</mat-label>
+        <input matInput type="password" formControlName="confirmPassword" />
+      </mat-form-field>
+
+      <p *ngIf="registerForm.errors?.['passwordMismatch'] && registerForm.touched" style="color: red;">
+        A jelszavak nem egyeznek meg.
+      </p>
+
+      <button mat-raised-button color="accent" type="submit" [disabled]="registerForm.invalid">
+        Regisztráció
+      </button>
+
+      <p *ngIf="registerError" style="color:red;">{{ registerError }}</p>
+    </form>
+  </mat-card>
+</div>

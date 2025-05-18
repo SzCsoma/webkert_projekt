@@ -1,18 +1,22 @@
 import { Component } from '@angular/core';
 import { Matches } from './matches.model';
 import { Player } from '../players/player.model';
+import { CustomDatePipe } from '../../../assets/pipes/date.pipe';
 
 @Component({
   selector: 'app-matches',
   templateUrl: './matches.component.html',
-  styleUrls: ['./matches.component.scss']
+  styleUrls: ['./matches.component.scss'],
+  providers: [CustomDatePipe] 
+  ,
+  imports: [CustomDatePipe]
 })
 export class MatchesComponent {
   dummyPlayers: Player[] = [];
 
   matches: Matches[] = [];
 
-  constructor() {
+  constructor(private datePipe: CustomDatePipe) {
     this.matches = [
       {
         challenger: {

@@ -15,12 +15,14 @@ export class TeamsComponent {
       imageUrl: 'assets/a_team.png', 
       players: [
         {
+          id:"asd",
           name: 'Kovács Péter',
           capNumber: 5,
           bio: 'Fiatal játékos a válogatottban.',
           imageUrl: 'assets/placeholder.png',
         },
         {
+          id:"asd",
           name: 'Szabó Ádám',
           capNumber: 10,
           bio: 'Tapasztalt válogatott játékos.',
@@ -34,6 +36,7 @@ export class TeamsComponent {
       imageUrl: 'assets/a_team.png', 
       players: [
         {
+          id:"asd",
           name: 'Nagy László',
           capNumber: 3,
           bio: 'Erős center.',
